@@ -19,5 +19,7 @@ class GameApp:
 if __name__ == "__main__":
     root = tk.Tk()
     root.title("Catch the Ball")
+    root.geometry("400x500")           # Set fixed size
+    root.resizable(False, False)       # Prevent resizing
     app = GameApp(root)
     root.mainloop()

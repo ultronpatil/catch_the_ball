@@ -77,8 +77,19 @@ class CatchTheBallGame:
 
     def update_paddle(self):
         if not self.game_over and self.paddle_direction != 0:
-            self.canvas.move(self.paddle, self.paddle_direction * PADDLE_SPEED, 0)
+            x1, y1, x2, y2 = self.canvas.coords(self.paddle)
+            move_x = self.paddle_direction * PADDLE_SPEED
+
+            # Boundary check
+            if x1 + move_x < 0:
+                move_x = -x1
+            elif x2 + move_x > WIDTH:
+                move_x = WIDTH - x2
+
+            self.canvas.move(self.paddle, move_x, 0)
+
         self.root.after(30, self.update_paddle)
+
 
 
     def create_fireballs(self):
