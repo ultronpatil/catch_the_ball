@@ -26,42 +26,60 @@ class CatchTheBallGame:
         self.game_over = False
         self.back_button = None
 
+        # Paddle movement
+        self.paddle_direction = 0
+        self.root.bind("<KeyPress-Left>", self.on_key_press)
+        self.root.bind("<KeyPress-Right>", self.on_key_press)
+        self.root.bind("<KeyRelease-Left>", self.on_key_release)
+        self.root.bind("<KeyRelease-Right>", self.on_key_release)
+
+        # Load fireball image BEFORE creating fireballs
         self.fireball_img_raw = Image.open("assets/fireball.png").resize((30, 30))
         self.fireball_img = ImageTk.PhotoImage(self.fireball_img_raw)
+
         self.fireballs = []
         self.fireball_speed = LEVEL_FIREBALL_SPEED.get(level, 3)
         self.num_fireballs = LEVEL_FIREBALLS.get(level, 1)
         self.create_fireballs()
 
+        # Ball and paddle
         self.ball = self.canvas.create_oval(0, 0, BALL_SIZE, BALL_SIZE, fill="red")
         self.paddle = self.canvas.create_rectangle(
-            WIDTH//2 - PADDLE_WIDTH//2,
+            WIDTH // 2 - PADDLE_WIDTH // 2,
             HEIGHT - PADDLE_HEIGHT - 10,
-            WIDTH//2 + PADDLE_WIDTH//2,
+            WIDTH // 2 + PADDLE_WIDTH // 2,
             HEIGHT - 10,
             fill="black"
         )
-        self.text = self.canvas.create_text(WIDTH//2, 20, text="Score: 0", font=("Arial", 16))
+        self.text = self.canvas.create_text(WIDTH // 2, 20, text="Score: 0", font=("Arial", 16))
 
         self.ball_x = random.randint(0, WIDTH - BALL_SIZE)
         self.ball_y = 0
         self.canvas.move(self.ball, self.ball_x, self.ball_y)
 
-        self.root.bind("<Left>", self.move_left)
-        self.root.bind("<Right>", self.move_right)
-
         self.lives = 3
         self.lives_text = self.canvas.create_text(350, 20, text=f"Lives: {self.lives}", font=("Arial", 14), fill="black")
 
+        # Start update loops
         self.update_game()
+        self.update_paddle()
 
-    def move_left(self, event):
-        if not self.game_over:
-            self.canvas.move(self.paddle, -PADDLE_SPEED, 0)
 
-    def move_right(self, event):
-        if not self.game_over:
-            self.canvas.move(self.paddle, PADDLE_SPEED, 0)
+    def on_key_press(self, event):
+        if event.keysym == "Left":
+            self.paddle_direction = -1
+        elif event.keysym == "Right":
+            self.paddle_direction = 1
+
+    def on_key_release(self, event):
+        if event.keysym in ["Left", "Right"]:
+            self.paddle_direction = 0
+
+    def update_paddle(self):
+        if not self.game_over and self.paddle_direction != 0:
+            self.canvas.move(self.paddle, self.paddle_direction * PADDLE_SPEED, 0)
+        self.root.after(30, self.update_paddle)
+
 
     def create_fireballs(self):
         for _ in range(self.num_fireballs):
